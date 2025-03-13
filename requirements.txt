@@ -1,4 +1,7 @@
+numpy<2
 pandas==2.2.3
+pyarrow==14.0.2
+dash==2.18.2
 dash-core-components==2.0.0
 dash-html-components==2.0.0
 dash-table==5.0.0
@@ -7,6 +10,5 @@ gdown==5.2.0
 gunicorn==23.0.0
 llvmlite==0.43.0
 munkres==1.1.4
-pyarrow==14.0.2
 pygeohash==1.2.0
 zstandard==0.23.0
