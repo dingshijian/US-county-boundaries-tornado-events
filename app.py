@@ -168,3 +168,4 @@ def update_figure(selected_year):
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8050))  # Use PORT from Render
     app.run_server(debug=True, host='0.0.0.0', port=port)
+    server = app.server  # Required for Render deployment
