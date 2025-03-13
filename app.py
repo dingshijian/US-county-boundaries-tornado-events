@@ -7,6 +7,7 @@ from dash import dcc, html, Input, Output
 import plotly.graph_objects as go
 import geopandas as gpd
 from shapely.ops import unary_union
+import gdown
 
 # ---- SET FILE PATHS ----
 county_geojson_file = "gz_2010_us_050_00_20m.json"  # Must be in your project folder
@@ -16,21 +17,15 @@ csv_path = "us-weather-events-1980-2024.csv"
 file_id = "1WDsm4qBNcGg8MOskRcLvSRGRU41Ef6rX"
 gdrive_url = f"https://drive.google.com/uc?export=download&id={file_id}"
 
-def download_large_file_from_gdrive(destination):
-    """Downloads a large Google Drive file in chunks."""
-    session = requests.Session()
-    response = session.get(gdrive_url, stream=True)
-    
-    if response.status_code == 200:
-        print(f"Downloading {destination} from Google Drive...")
-        with open(destination, "wb") as f:
-            for chunk in response.iter_content(chunk_size=1024 * 1024):  # 1MB chunks
-                if chunk:
-                    f.write(chunk)
-        print("✅ Download complete.")
-    else:
-        print(f"❌ Failed to download CSV. Status code: {response.status_code}")
-        exit(1)
+def download_large_file_from_gdrive():
+    """Downloads a large Google Drive file using gdown."""
+    print(f"Downloading {csv_path} from Google Drive...")
+    gdown.download(gdrive_url, csv_path, quiet=False)
+    print("✅ Download complete.")
+
+# 🔹 Download only if the file does not exist
+if not os.path.exists(csv_path):
+    download_large_file_from_gdrive()
 
 # 🔹 Download only if the file does not exist
 if not os.path.exists(csv_path):
