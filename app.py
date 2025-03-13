@@ -38,7 +38,7 @@ if not os.path.exists(csv_path):
 
 # ✅ Read the CSV File (Use Low Memory Mode for Large Files)
 df_tornado = pd.read_csv(csv_path, low_memory=False)
-s
+
 print("📌 Columns in the CSV:", df_tornado.columns.tolist())
 print("📏 File size:", os.path.getsize(csv_path), "bytes")
 print("📊 Unique EVENT_TYPE values:", df_tornado["EVENT_TYPE"].unique())
