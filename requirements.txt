@@ -12,3 +12,8 @@ llvmlite==0.43.0
 munkres==1.1.4
 pygeohash==1.2.0
 zstandard==0.23.0
+geopandas==1.0.1
+shapely==2.0.7
+pyproj==3.7.1
+fiona==1.9.6
+rtree==1.1.0
