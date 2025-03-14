@@ -1,6 +1,5 @@
-
-dask==2023.7.0
-pandas==2.1.1
+dask==2023.10.1
+pandas==2.0.3
 dash==2.18.2
 dash-core-components==2.0.0
 dash-html-components==2.0.0
