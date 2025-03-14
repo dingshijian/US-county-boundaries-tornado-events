@@ -1,16 +1,17 @@
 import os
 import json
 import requests
-import pandas as pd
 import dash
+import dask.dataframe as dd  # ✅ Dask for handling large data
+import pandas as pd
+import gdown
 from dash import dcc, html, Input, Output
 import plotly.graph_objects as go
 import geopandas as gpd
 from shapely.ops import unary_union
-import gdown
 
 # ---- SET FILE PATHS ----
-county_geojson_file = "gz_2010_us_050_00_20m.json"  # Must be in your project folder
+county_geojson_file = "gz_2010_us_050_00_20m.json"
 csv_path = "us-weather-events-1980-2024.csv"
 
 # ---- GOOGLE DRIVE LARGE FILE HANDLING ----
@@ -27,32 +28,26 @@ def download_large_file_from_gdrive():
 if not os.path.exists(csv_path):
     download_large_file_from_gdrive()
 
-# 🔹 Download only if the file does not exist
-if not os.path.exists(csv_path):
-    download_large_file_from_gdrive(csv_path)
+# ✅ Read the CSV File Using Dask
+df_tornado = dd.read_csv(csv_path, dtype={'TOR_F_SCALE': 'object'}, assume_missing=True)
 
-# ✅ Read the CSV File (Use Low Memory Mode for Large Files)
-df_tornado = pd.read_csv(csv_path, low_memory=False)
-
-print("📌 Columns in the CSV:", df_tornado.columns.tolist())
+print("📌 Columns in the CSV:", df_tornado.columns)
 print("📏 File size:", os.path.getsize(csv_path), "bytes")
-print("📊 Unique EVENT_TYPE values:", df_tornado["EVENT_TYPE"].unique())
-print("🛠 Data type of EVENT_TYPE:", df_tornado["EVENT_TYPE"].dtype)
+print("📊 Unique EVENT_TYPE values:", df_tornado["EVENT_TYPE"].compute().unique())
 
 # ---- PROCESSING THE DATA ----
 df_tornado = df_tornado[df_tornado["EVENT_TYPE"] == "Tornado"]
 df_tornado = df_tornado.dropna(subset=["BEGIN_LAT", "BEGIN_LON"])
 
 # Convert coordinates to numeric
-df_tornado["BEGIN_LAT"] = pd.to_numeric(df_tornado["BEGIN_LAT"], errors="coerce")
-df_tornado["BEGIN_LON"] = pd.to_numeric(df_tornado["BEGIN_LON"], errors="coerce")
+df_tornado["BEGIN_LAT"] = df_tornado["BEGIN_LAT"].astype(float)
+df_tornado["BEGIN_LON"] = df_tornado["BEGIN_LON"].astype(float)
 
 # Extract year from "BEGIN_DATE_TIME"
-df_tornado["YEAR"] = pd.to_datetime(df_tornado["BEGIN_DATE_TIME"], errors='coerce').dt.year
+df_tornado["YEAR"] = dd.to_datetime(df_tornado["BEGIN_DATE_TIME"], errors='coerce').dt.year
 
 # Assign default F0 if "TOR_F_SCALE" is missing
-if "TOR_F_SCALE" not in df_tornado.columns:
-    df_tornado["TOR_F_SCALE"] = "F0"
+df_tornado["TOR_F_SCALE"] = df_tornado["TOR_F_SCALE"].fillna("F0")
 
 # ---- FUJITA SCALE MAPPING ----
 f_scale_mapping = {
@@ -100,7 +95,7 @@ geo_layout = dict(
 
 # ---- FUNCTION TO CREATE FIGURE ----
 def create_figure(selected_year):
-    df_year = df_tornado[df_tornado["YEAR"] == selected_year]
+    df_year = df_tornado[df_tornado["YEAR"] == selected_year].compute()
     
     fig = go.Figure()
 
